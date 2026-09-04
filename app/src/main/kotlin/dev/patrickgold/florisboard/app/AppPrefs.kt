@@ -28,7 +28,7 @@ import dev.patrickgold.florisboard.ime.clipboard.ClipboardSyncBehavior
 import dev.patrickgold.florisboard.ime.core.DisplayLanguageNamesIn
 import dev.patrickgold.florisboard.ime.core.Subtype
 import dev.patrickgold.florisboard.ime.extension.ExtensionComponentName
-import dev.patrickgold.florisboard.ime.extension.extCoreTheme
+import dev.patrickgold.florisboard.ime.extension.extCoreKeyboardTheme
 import dev.patrickgold.florisboard.ime.keyboard3.touch.ShiftKeyBehavior
 import dev.patrickgold.florisboard.ime.keyboard.IncognitoMode
 import dev.patrickgold.florisboard.ime.keyboard.SpaceBarMode
@@ -686,12 +686,12 @@ abstract class FlorisPreferenceModel : PreferenceModel() {
         )
         val dayThemeId = custom(
             key = "theme__day_theme_id",
-            default = extCoreTheme("floris_day"),
+            default = extCoreKeyboardTheme("keyboard_day_my"),
             serializer = ExtensionComponentName.Serializer,
         )
         val nightThemeId = custom(
             key = "theme__night_theme_id",
-            default = extCoreTheme("floris_night"),
+            default = extCoreKeyboardTheme("keyboard_night_my"),
             serializer = ExtensionComponentName.Serializer,
         )
         val accentColor = custom(
