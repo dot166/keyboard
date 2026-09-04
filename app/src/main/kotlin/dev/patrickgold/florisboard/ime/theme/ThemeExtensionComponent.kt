@@ -32,6 +32,12 @@ inline fun extCoreTheme(id: String) = ExtensionComponentName(
 )
 
 @Suppress("NOTHING_TO_INLINE")
+inline fun extCoreKeyboardTheme(id: String) = ExtensionComponentName(
+    extensionId = "io.github.dot166.keyboard.themes",
+    componentId = id,
+)
+
+@Suppress("NOTHING_TO_INLINE")
 inline fun extPreviewTheme(id: String) = ExtensionComponentName(
     extensionId = "local.themes.preview",
     componentId = id,
