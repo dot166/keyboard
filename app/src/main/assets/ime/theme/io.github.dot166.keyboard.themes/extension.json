@@ -52,6 +52,50 @@
         "contrastLevel": "Default",
         "specVersion": "SPEC_2025"
       }
+    },
+    {
+      "id": "keyboard_day_my_miku",
+      "label": "Keyboard Day Miku (Material You)",
+      "authors": [ "._______166" ],
+      "isNight": false,
+      "materialYouFlags": {
+        "paletteStyle": "Expressive",
+        "contrastLevel": "Default",
+        "specVersion": "SPEC_2025"
+      }
+    },
+    {
+      "id": "keyboard_day_my_miku_borderless",
+      "label": "Keyboard Day Borderless Miku (Material You)",
+      "authors": [ "._______166" ],
+      "isNight": false,
+      "materialYouFlags": {
+        "paletteStyle": "Expressive",
+        "contrastLevel": "Default",
+        "specVersion": "SPEC_2025"
+      }
+    },
+    {
+      "id": "keyboard_night_my_miku",
+      "label": "Keyboard Night Miku (Material You)",
+      "authors": [ "._______166" ],
+      "isNight": true,
+      "materialYouFlags": {
+        "paletteStyle": "Expressive",
+        "contrastLevel": "Default",
+        "specVersion": "SPEC_2025"
+      }
+    },
+    {
+      "id": "keyboard_night_my_miku_borderless",
+      "label": "Keyboard Night Borderless Miku (Material You)",
+      "authors": [ "._______166" ],
+      "isNight": true,
+      "materialYouFlags": {
+        "paletteStyle": "Expressive",
+        "contrastLevel": "Default",
+        "specVersion": "SPEC_2025"
+      }
     }
   ]
 }
