@@ -73,6 +73,11 @@ fun extCoreTheme(id: String) = ExtensionComponentName(
     componentId = id,
 )
 
+fun extCoreKeyboardTheme(id: String) = ExtensionComponentName(
+    extensionId = "io.github.dot166.keyboard.themes",
+    componentId = id,
+)
+
 fun extPreviewTheme(id: String) = ExtensionComponentName(
     extensionId = "local.themes.preview",
     componentId = id,
