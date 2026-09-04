@@ -1,0 +1,57 @@
+{
+  "$": "ime.extension.theme",
+  "meta": {
+    "id": "io.github.dot166.keyboard.themes",
+    "version": "0.6.0",
+    "title": "Keyboard default themes",
+    "description": "Default themes (both day and night) for the keyboard UI",
+    "maintainers": [ "._______166" ],
+    "license": "apache-2.0"
+  },
+  "themes": [
+    {
+      "id": "keyboard_day_my",
+      "label": "Keyboard Day (Material You)",
+      "authors": [ "lm41", "._______166" ],
+      "isNight": false,
+      "materialYouFlags": {
+        "paletteStyle": "Expressive",
+        "contrastLevel": "Default",
+        "specVersion": "SPEC_2025"
+      }
+    },
+    {
+      "id": "keyboard_day_my_borderless",
+      "label": "Keyboard Day Borderless (Material You)",
+      "authors": [ "lm41", "._______166" ],
+      "isNight": false,
+      "materialYouFlags": {
+        "paletteStyle": "Expressive",
+        "contrastLevel": "Default",
+        "specVersion": "SPEC_2025"
+      }
+    },
+    {
+      "id": "keyboard_night_my",
+      "label": "Keyboard Night (Material You)",
+      "authors": [ "lm41", "._______166" ],
+      "isNight": true,
+      "materialYouFlags": {
+        "paletteStyle": "Expressive",
+        "contrastLevel": "Default",
+        "specVersion": "SPEC_2025"
+      }
+    },
+    {
+      "id": "keyboard_night_my_borderless",
+      "label": "Keyboard Night Borderless (Material You)",
+      "authors": [ "lm41", "._______166" ],
+      "isNight": true,
+      "materialYouFlags": {
+        "paletteStyle": "Expressive",
+        "contrastLevel": "Default",
+        "specVersion": "SPEC_2025"
+      }
+    }
+  ]
+}
