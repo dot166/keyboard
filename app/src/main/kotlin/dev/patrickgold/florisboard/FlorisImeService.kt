@@ -51,6 +51,7 @@ import dev.patrickgold.florisboard.ime.keyboard3.ImeEditor
 import dev.patrickgold.florisboard.ime.landscapeinput.ExtractedInputRootView
 import dev.patrickgold.florisboard.ime.landscapeinput.LandscapeInputUiMode
 import dev.patrickgold.florisboard.ime.lifecycle.LifecycleInputMethodService
+import dev.patrickgold.florisboard.ime.mozc.MozcEngine
 import dev.patrickgold.florisboard.ime.nlp.NlpInlineAutofill
 import dev.patrickgold.florisboard.ime.smartbar.createInlineSuggestionUiStyleBundle
 import dev.patrickgold.florisboard.ime.theme.WallpaperChangeReceiver
@@ -73,6 +74,7 @@ import org.florisboard.lib.android.systemServiceOrNull
 import org.florisboard.lib.kotlin.collectIn
 import org.florisboard.lib.kotlin.collectLatestIn
 import org.k3lp.runtime.K3TextRange
+import java.io.IOException
 import java.lang.ref.WeakReference
 
 /**
@@ -310,6 +312,11 @@ class FlorisImeService : LifecycleInputMethodService() {
 
         @Suppress("DEPRECATION") // We do not retrieve the wallpaper but only listen to changes
         registerReceiver(wallpaperChangeReceiver, IntentFilter(Intent.ACTION_WALLPAPER_CHANGED))
+        try {
+            MozcEngine.init(this);
+        } catch (e: IOException) {
+            throw RuntimeException(e);
+        }
     }
 
     override fun onCreateInputView(): View? {
@@ -353,6 +360,7 @@ class FlorisImeService : LifecycleInputMethodService() {
         super.onDestroy()
         unregisterReceiver(wallpaperChangeReceiver)
         FlorisImeServiceReference = WeakReference(null)
+        MozcEngine.instance.deleteSession();
     }
 
     override fun onStartInput(info: EditorInfo?, restarting: Boolean) {
@@ -400,6 +408,11 @@ class FlorisImeService : LifecycleInputMethodService() {
         currentInputConnection?.requestCursorUpdates(0)
         imeController.updateStateBlocking {
             handleFinishInputView()
+        }
+        try {
+            MozcEngine.instance.resetSession();
+        } catch (e: IOException) {
+            throw RuntimeException(e);
         }
     }
 
