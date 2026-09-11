@@ -61,6 +61,7 @@ import dev.patrickgold.jetpref.datastore.model.PreferenceType
 import dev.patrickgold.jetpref.material.ui.ColorRepresentation
 import kotlinx.serialization.json.Json
 import org.florisboard.lib.android.isOrientationPortrait
+import org.mozc.android.inputmethod.japanese.protobuf.ProtoCommands
 
 val FlorisPreferenceStore = jetprefDataStoreOf(FlorisPreferenceModel::class)
 
@@ -447,6 +448,10 @@ abstract class FlorisPreferenceModel : PreferenceModel() {
         val notificationPermissionState = enum(
             key = "internal__notification_permission_state",
             default = NotificationPermissionState.NOT_SET,
+        )
+        val mozcCompositionMode = enum(
+            key = "internal__mozc_composition_mode",
+            default = ProtoCommands.CompositionMode.HIRAGANA
         )
     }
 
