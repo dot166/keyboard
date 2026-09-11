@@ -317,8 +317,7 @@ class ImeController(
 
         @OptIn(WillRequireMigrationToRichErrors::class)
         override fun emitText(value: K3String) {
-            if (state.model.info.indicator?.contains("mozcJP") ?: false && (state.touchLayerId == ImeLayerIds.Base || state.touchLayerId == ImeLayerIds.Kana) && state.flags.keyVariation != KeyVariation.PASSWORD) { // assume false if null
-                val previousPreedit = MozcEngine.instance.preedit.value
+            if (state.model.info.indicator?.contains("mozcJa") ?: false && (state.touchLayerId == ImeLayerIds.Base || state.touchLayerId == ImeLayerIds.Kana) && state.flags.keyVariation != KeyVariation.PASSWORD) { // assume false if null
                 for (key in value.toText()) {
                     if (key == ' ') {
                         // for some reason, k3lp hardcodes space to output a space, so we replace it with the space keycode and send it to mozc
@@ -336,9 +335,7 @@ class ImeController(
                         textSelected = "",
                     )
                     val newSelection = K3TextRange(state.content.selection.min + text.length)
-                    val newStart = newSurroundingText.textBefore.indexOf(preedit)
-                    val newEnd = newStart + preedit.length
-                    val newComposition = K3TextRange(newStart, newEnd)
+                    val newComposition = evaluateCompositionOf(state.model, newSelection, newSurroundingText)
                     state = state.copy(
                         content = state.content.copy(
                             selection = newSelection,
@@ -349,23 +346,29 @@ class ImeController(
                     )
                     state.editor.composeMozcInput(range, text, newSelection, newComposition)
                 } else {
-                    val start = state.content.surroundingText.textBefore.indexOf(previousPreedit)
-                    val end = if (start != -1) start + previousPreedit.length else -1
-                    val selection = K3TextRange(start, end)
-                    val range = if (start == -1) {
-                        state.content.offset..<K3TextRange.Zero.min
-                    } else {
-                        selection.asRange()
-                    }
+                    val oldComposition = state.content.composition
+                    val (oldStart, oldEnd) =
+                        if (oldComposition != null) {
+                            oldComposition.start to oldComposition.end
+                        } else {
+                            val cursor = state.content.selection.min
+                            cursor to cursor
+                        }
+                    val localStart = oldStart - state.content.offset
+                    val localEnd = oldEnd - state.content.offset
+                    val selection = K3TextRange(localStart, localEnd)
+                    val range = selection.asRange()
                     val text = preedit.asK3String().normalize(NormalizationForm.NFC).toText()
+                    val textBefore = state.content.surroundingText.textBefore
                     val newSurroundingText = state.content.surroundingText.copy(
-                        textBefore = state.content.surroundingText.textBefore.replace(previousPreedit, preedit),
+                        textBefore = textBefore.substring(0, localStart) + preedit + textBefore.substring(localEnd),
                         textSelected = "",
                     )
                     val newSelection = K3TextRange(state.content.offset + newSurroundingText.textBefore.length)
-                    val newStart = newSurroundingText.textBefore.indexOf(preedit)
-                    val newEnd = newStart + preedit.length
-                    val newComposition = K3TextRange(newStart, newEnd)
+                    val newComposition = K3TextRange(
+                        newSelection.start - preedit.length,
+                        newSelection.start
+                    )
                     state = state.copy(
                         content = state.content.copy(
                             selection = newSelection,
@@ -386,7 +389,7 @@ class ImeController(
         // override this to intercept the swap mode and 'base' buttons
         override fun switchTouchLayer(newTouchLayerId: K3LayerId) {
             var layer = newTouchLayerId
-            if (state.model.info.indicator?.contains("mozcJP") ?: false) { // assume false if null
+            if (state.model.info.indicator?.contains("mozcJa") ?: false) { // assume false if null
                 if (layer == ImeLayerIds.Kana && state.touchLayerId == ImeLayerIds.Base) {
                     MozcEngine.instance.compositionMode = ProtoCommands.CompositionMode.HIRAGANA
                 } else if (layer == ImeLayerIds.Base && state.touchLayerId == ImeLayerIds.Kana) {
@@ -401,11 +404,7 @@ class ImeController(
                     MozcEngine.instance.sendKey(ProtoCommands.KeyEvent.SpecialKey.ENTER)
                     state = state.copy(
                         content = state.content.copy(
-                            composition = evaluateCompositionOf(
-                                state.model,
-                                state.content.selection,
-                                state.content.surroundingText
-                            ),
+                            composition = null,
                         ),
                     )
                     state.editor.finishComposingMozc()
@@ -469,16 +468,12 @@ class ImeController(
                 ImeActions.ShowTextPanel -> {
                     // just in case the keycode is triggered while in text mode
                     // TODO: find a better way of determining language, probably when the rest of the infra comes with the final impl of k3lp
-                    if (state.model.info.indicator?.contains("mozcJP") ?: false) {
+                    if (state.model.info.indicator?.contains("mozcJa") ?: false) {
                         if (MozcEngine.instance.preedit.value.isNotEmpty()) {
                             MozcEngine.instance.sendKey(ProtoCommands.KeyEvent.SpecialKey.ENTER)
                             state = state.copy(
                                 content = state.content.copy(
-                                    composition = evaluateCompositionOf(
-                                        state.model,
-                                        state.content.selection,
-                                        state.content.surroundingText
-                                    ),
+                                    composition = null,
                                 ),
                             )
                             state.editor.finishComposingMozc()
@@ -489,16 +484,12 @@ class ImeController(
                     )
                 }
                 ImeActions.ShowMediaPanel -> {
-                    if (state.model.info.indicator?.contains("mozcJP") ?: false) {
+                    if (state.model.info.indicator?.contains("mozcJa") ?: false) {
                         if (MozcEngine.instance.preedit.value.isNotEmpty()) {
                             MozcEngine.instance.sendKey(ProtoCommands.KeyEvent.SpecialKey.ENTER)
                             state = state.copy(
                                 content = state.content.copy(
-                                    composition = evaluateCompositionOf(
-                                        state.model,
-                                        state.content.selection,
-                                        state.content.surroundingText
-                                    ),
+                                    composition = null,
                                 ),
                             )
                             state.editor.finishComposingMozc()
@@ -509,16 +500,12 @@ class ImeController(
                     )
                 }
                 ImeActions.ShowClipboardPanel -> {
-                    if (state.model.info.indicator?.contains("mozcJP") ?: false) {
+                    if (state.model.info.indicator?.contains("mozcJa") ?: false) {
                         if (MozcEngine.instance.preedit.value.isNotEmpty()) {
                             MozcEngine.instance.sendKey(ProtoCommands.KeyEvent.SpecialKey.ENTER)
                             state = state.copy(
                                 content = state.content.copy(
-                                    composition = evaluateCompositionOf(
-                                        state.model,
-                                        state.content.selection,
-                                        state.content.surroundingText
-                                    ),
+                                    composition = null,
                                 ),
                             )
                             state.editor.finishComposingMozc()
@@ -561,28 +548,33 @@ class ImeController(
         }
 
         override fun emitBackspace() {
-            if (state.model.info.indicator?.contains("mozcJP") ?: false && (state.touchLayerId == ImeLayerIds.Base || state.touchLayerId == ImeLayerIds.Kana) && state.flags.keyVariation != KeyVariation.PASSWORD) {
+            if (state.model.info.indicator?.contains("mozcJa") ?: false && (state.touchLayerId == ImeLayerIds.Base || state.touchLayerId == ImeLayerIds.Kana) && state.flags.keyVariation != KeyVariation.PASSWORD) {
                 if (MozcEngine.instance.preedit.value.isNotEmpty()) {
-                    val previousPreedit = MozcEngine.instance.preedit.value
                     MozcEngine.instance.sendKey(ProtoCommands.KeyEvent.SpecialKey.BACKSPACE)
                     val preedit = MozcEngine.instance.preedit.value
-                    val start = state.content.surroundingText.textBefore.indexOf(previousPreedit)
-                    val end = if (start != -1) start + previousPreedit.length else -1
-                    val selection = K3TextRange(start, end)
-                    val range = if (start == -1) {
-                        state.content.offset..<K3TextRange.Zero.min
-                    } else {
-                        selection.asRange()
-                    }
+                    val oldComposition = state.content.composition
+                    val (oldStart, oldEnd) =
+                        if (oldComposition != null) {
+                            oldComposition.start to oldComposition.end
+                        } else {
+                            val cursor = state.content.selection.min
+                            cursor to cursor
+                        }
+                    val localStart = oldStart - state.content.offset
+                    val localEnd = oldEnd - state.content.offset
+                    val selection = K3TextRange(localStart, localEnd)
+                    val range = selection.asRange()
                     val text = preedit.asK3String().normalize(NormalizationForm.NFC).toText()
+                    val textBefore = state.content.surroundingText.textBefore
                     val newSurroundingText = state.content.surroundingText.copy(
-                        textBefore = state.content.surroundingText.textBefore.replace(previousPreedit, preedit),
+                        textBefore = textBefore.substring(0, localStart) + preedit + textBefore.substring(localEnd),
                         textSelected = "",
                     )
                     val newSelection = K3TextRange(state.content.offset + newSurroundingText.textBefore.length)
-                    val newStart = newSurroundingText.textBefore.indexOf(preedit)
-                    val newEnd = newStart + preedit.length
-                    val newComposition = K3TextRange(newStart, newEnd)
+                    val newComposition = K3TextRange(
+                        newSelection.start - preedit.length,
+                        newSelection.start
+                    )
                     state = state.copy(
                         content = state.content.copy(
                             selection = newSelection,
@@ -600,12 +592,12 @@ class ImeController(
         }
 
         override fun emitEnter() {
-            if (state.model.info.indicator?.contains("mozcJP") ?: false && (state.touchLayerId == ImeLayerIds.Base || state.touchLayerId == ImeLayerIds.Kana) && state.flags.keyVariation != KeyVariation.PASSWORD) {
+            if (state.model.info.indicator?.contains("mozcJa") ?: false && (state.touchLayerId == ImeLayerIds.Base || state.touchLayerId == ImeLayerIds.Kana) && state.flags.keyVariation != KeyVariation.PASSWORD) {
                 if (MozcEngine.instance.preedit.value.isNotEmpty()) {
                     MozcEngine.instance.sendKey(ProtoCommands.KeyEvent.SpecialKey.ENTER)
                     state = state.copy(
                         content = state.content.copy(
-                            composition = evaluateCompositionOf(state.model, state.content.selection, state.content.surroundingText),
+                            composition = null,
                         ),
                     )
                     state.editor.finishComposingMozc()
