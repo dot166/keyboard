@@ -91,6 +91,12 @@ fun DevtoolsScreen() = FlorisScreen {
                 visibleIf = { AndroidVersion.ATLEAST_API30_R },
             )
             SwitchPreference(
+                prefs.devtools.showMozcOverlay,
+                title = stringRes(R.string.devtools__show_mozc_overlay__label),
+                summary = stringRes(R.string.devtools__show_mozc_overlay__summary),
+                enabledIf = { prefs.devtools.enabled isEqualTo true },
+            )
+            SwitchPreference(
                 prefs.devtools.showKeyTouchBoundaries,
                 title = stringRes(R.string.devtools__show_key_touch_boundaries__label),
                 summary = stringRes(R.string.devtools__show_key_touch_boundaries__summary),

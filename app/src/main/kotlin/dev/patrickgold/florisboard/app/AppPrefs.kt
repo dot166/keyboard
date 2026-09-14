@@ -194,6 +194,10 @@ abstract class FlorisPreferenceModel : PreferenceModel() {
             key = "devtools__show_inline_autofill_overlay",
             default = false,
         )
+        val showMozcOverlay = boolean(
+            key = "devtools__show_mozc_overlay",
+            default = false,
+        )
         val showKeyTouchBoundaries = boolean(
             key = "devtools__show_touch_boundaries",
             default = false,
