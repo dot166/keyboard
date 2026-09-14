@@ -43,6 +43,7 @@ import dev.patrickgold.florisboard.app.FlorisPreferenceStore
 import dev.patrickgold.florisboard.appContext
 import dev.patrickgold.florisboard.clipboardManager
 import dev.patrickgold.florisboard.ime.keyboard3.LocalImeController
+import dev.patrickgold.florisboard.ime.mozc.MozcEngine
 import dev.patrickgold.florisboard.ime.nlp.NlpInlineAutofill
 import dev.patrickgold.florisboard.ime.theme.ThemeManager
 import dev.patrickgold.florisboard.lib.FlorisLocale
@@ -69,6 +70,7 @@ fun DevtoolsOverlay(modifier: Modifier = Modifier) {
     val showInputStateOverlay by prefs.devtools.showInputStateOverlay.collectAsState()
     val showSpellingOverlay by prefs.devtools.showSpellingOverlay.collectAsState()
     val showInlineAutofillOverlay by prefs.devtools.showInlineAutofillOverlay.collectAsState()
+    val showMozcOverlay by prefs.devtools.showMozcOverlay.collectAsState()
     val prefsLoaded by appContext.preferenceStoreLoaded.collectAsState()
 
     val themeInfo by themeManager.activeThemeInfo.collectAsState()
@@ -88,6 +90,9 @@ fun DevtoolsOverlay(modifier: Modifier = Modifier) {
             }
             if (devtoolsEnabled && showInlineAutofillOverlay && AndroidVersion.ATLEAST_API30_R) {
                 DevtoolsInlineAutofillOverlay()
+            }
+            if (devtoolsEnabled && showMozcOverlay) {
+                DevtoolsMozcOverlay()
             }
             val loadFailure = themeInfo.loadFailure
             if (loadFailure != null && prefsLoaded) {
@@ -192,6 +197,22 @@ private fun DevtoolsInlineAutofillOverlay() {
                 DevtoolsText(text = "info.isPinned: ${info.isPinned}")
                 val view = inlineSuggestion.view
                 DevtoolsText(text = "view: ${view?.javaClass?.name}")
+            }
+        }
+    }
+}
+
+@Composable
+private fun DevtoolsMozcOverlay() {
+    val mozc = MozcEngine.instance
+
+    DevtoolsOverlayBox(title = "Mozc overlay") {
+        DevtoolsSubGroup(title = "MozcPreedit") {
+            DevtoolsText(text = "Preedit=${mozc.preedit.collectAsState().value}")
+        }
+        DevtoolsSubGroup(title = "MozcCandidates") {
+            for (candidate in mozc.candidates.collectAsState().value) {
+                DevtoolsText(text = "candidate:     ${candidate.value}")
             }
         }
     }
