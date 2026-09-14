@@ -95,9 +95,9 @@ fun neutralDynamicColorScheme(
     neutral: Color? = null,
     neutralVariant: Color? = null,
     error: Color? = null,
-    style: PaletteStyle = PaletteStyle.Neutral,
+    style: PaletteStyle = PaletteStyle.Expressive,
     contrastLevel: Double = Contrast.Default.value,
-    specVersion: ColorSpec.SpecVersion = ColorSpec.SpecVersion.Default,
+    specVersion: ColorSpec.SpecVersion = ColorSpec.SpecVersion.SPEC_2025,
     platform: DynamicScheme.Platform = DynamicScheme.Platform.Default,
     modifyColorScheme: ((ColorScheme) -> ColorScheme)? = null,
 ): ColorScheme =
