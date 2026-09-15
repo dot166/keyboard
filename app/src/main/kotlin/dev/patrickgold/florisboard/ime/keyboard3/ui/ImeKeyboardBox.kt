@@ -89,6 +89,7 @@ fun ImeKeyboardBox(
     }
 
     val showNumberRow by prefs.keyboard.numberRow.collectAsState()
+    val showKeyHints by prefs.keyboard.hintedSymbolsEnabled.collectAsState()
     var activeTouchModel by remember {
         mutableStateOf(imeController.touchModelCache.getFor(model, showNumberRow) ?: TouchModel.Empty)
     }
@@ -210,6 +211,7 @@ fun ImeKeyboardBox(
                             )
                             layout(placeable.width, placeable.height) { placeable.place(offset) }
                         },
+                    showKeyHints = showKeyHints,
                 )
                 if (devtoolsEnabled && debugShowTouchBoundaries) {
                     Box(
@@ -236,9 +238,11 @@ private fun ImeKeyboardKeyBox(
     isPressed: Boolean,
     longPress: LongPress,
     modifier: Modifier = Modifier,
+    showKeyHints: Boolean,
 ) {
     val display = displayOverride ?: touchKey.label
     val output = touchKey.attrs.output
+    val hint = touchKey.extendedPopupKeys.firstOrNull().takeIf { showKeyHints }
     val attributes: SnyggQueryAttributes = remember(output) {
         buildMap {
             if (output != null) {
@@ -261,6 +265,29 @@ private fun ImeKeyboardKeyBox(
                 .align(Alignment.Center),
             display = display,
         )
+    }
+    if (hint != null) {
+        val output = hint.data.output
+        val attributes: SnyggQueryAttributes = remember(output) {
+            buildMap {
+                if (output != null) {
+                    put(FlorisImeUi.Attr.Output, output.asAttrValue())
+                }
+            }
+        }
+        SnyggBox(
+            FlorisImeUi.KeyHint.elementName,
+            attributes = attributes,
+            selector = selector,
+            modifier = modifier,
+        ) {
+            Display3(
+                modifier = Modifier
+                    .wrapContentSize()
+                    .align(Alignment.TopEnd),
+                display = hint.label,
+            )
+        }
     }
     LongPressBox(longPress, attributes = attributes)
 }
