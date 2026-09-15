@@ -143,6 +143,7 @@ class ImeController(
         fun handleStartInputView(
             ic: WeakReference<InputConnection>,
             info: FlorisEditorInfo,
+            service: FlorisImeService,
         ) {
             val touchLayerId: K3LayerId
             val keyVariation: KeyVariation
@@ -211,7 +212,7 @@ class ImeController(
             )
 
             state = state.copy(
-                editor = ImeEditor(ic, info),
+                editor = ImeEditor(ic, info, service),
                 touchLayerId = touchLayerId,
                 flags = state.flags
                     .withKeyVariation(keyVariation)
