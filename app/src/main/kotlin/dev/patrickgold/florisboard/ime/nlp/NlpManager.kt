@@ -73,11 +73,11 @@ class NlpManager(context: Context) {
     private val providersForceSuggestionOn = mutableMapOf<String, Boolean>()
 
     private val internalSuggestionsGuard = Mutex()
-    private var internalSuggestions by Delegates.observable(SystemClock.uptimeMillis() to listOf<SuggestionCandidate>()) { _, _, _ ->
+    private var internalSuggestions by Delegates.observable(SystemClock.uptimeMillis() to SuggestionCandidates.EMPTY) { _, _, _ ->
         scope.launch { assembleCandidates() }
     }
 
-    private val _activeCandidatesFlow = MutableStateFlow(listOf<SuggestionCandidate>())
+    private val _activeCandidatesFlow = MutableStateFlow(SuggestionCandidates.EMPTY)
     val activeCandidatesFlow = _activeCandidatesFlow.asStateFlow()
     inline var activeCandidates
         get() = activeCandidatesFlow.value
@@ -207,11 +207,11 @@ class NlpManager(context: Context) {
                         isPrivateSession = false // TODO keyboardManager.activeState.isIncognitoMode,
                     )
                 }
-                else -> emptyList()
+                else -> SuggestionCandidates.EMPTY
             }
             val suggestions = when {
                 emojiSuggestions.isNotEmpty() && prefs.emoji.suggestionType.get().prefix.isNotEmpty() -> {
-                    emptyList()
+                    SuggestionCandidates.EMPTY
                 }
                 else -> {
                     getSuggestionProvider(subtype).suggest(
@@ -223,18 +223,22 @@ class NlpManager(context: Context) {
                     )
                 }
             }
+            val selectedIndex = when {
+                suggestions == SuggestionCandidates.EMPTY -> emojiSuggestions.selectedIndex
+                else -> suggestions.selectedIndex
+            }
             internalSuggestionsGuard.withLock {
                 if (internalSuggestions.first < reqTime) {
-                    internalSuggestions = reqTime to buildList {
+                    internalSuggestions = reqTime to SuggestionCandidates(buildList {
                         addAll(emojiSuggestions)
                         addAll(suggestions)
-                    }
+                    }, selectedIndex)
                 }
             }
         }
     }
 
-    fun suggestDirectly(suggestions: List<SuggestionCandidate>) {
+    fun suggestDirectly(suggestions: SuggestionCandidates) {
         val reqTime = SystemClock.uptimeMillis()
         runBlocking {
             internalSuggestions = reqTime to suggestions
@@ -244,7 +248,7 @@ class NlpManager(context: Context) {
     fun clearSuggestions() {
         val reqTime = SystemClock.uptimeMillis()
         runBlocking {
-            internalSuggestions = reqTime to emptyList()
+            internalSuggestions = reqTime to SuggestionCandidates.EMPTY
         }
     }
 
@@ -286,21 +290,23 @@ class NlpManager(context: Context) {
                         allowPossiblyOffensive = !prefs.suggestion.blockPossiblyOffensive.get(),
                         isPrivateSession = false // TODO keyboardManager.activeState.isIncognitoMode,
                     ).ifEmpty {
-                        buildList {
+                        SuggestionCandidates(
                             internalSuggestionsGuard.withLock {
-                                addAll(internalSuggestions.second)
-                            }
-                        }
+                                buildList {
+                                    addAll(internalSuggestions.second)
+                                }
+                            }, internalSuggestions.second.selectedIndex
+                        )
                     }
                 }
-                else -> emptyList()
+                else -> SuggestionCandidates.EMPTY
             }
             activeCandidates = candidates
             autoExpandCollapseSmartbarActions(candidates, NlpInlineAutofill.suggestions.value)
         }
     }
 
-    fun autoExpandCollapseSmartbarActions(list1: List<*>?, list2: List<*>?) {
+    fun autoExpandCollapseSmartbarActions(list1: SuggestionCandidates?, list2: List<*>?) {
         if (!prefs.smartbar.enabled.get()) {// || !prefs.smartbar.sharedActionsAutoExpandCollapse.get()) {
             return
         }
@@ -366,14 +372,14 @@ class NlpManager(context: Context) {
             maxCandidateCount: Int,
             allowPossiblyOffensive: Boolean,
             isPrivateSession: Boolean,
-        ): List<SuggestionCandidate> {
+        ): SuggestionCandidates {
             // Check if enabled
-            if (!prefs.clipboard.suggestionEnabled.get()) return emptyList()
+            if (!prefs.clipboard.suggestionEnabled.get()) return SuggestionCandidates.EMPTY
 
             val currentItem = validateClipboardItem(clipboardManager.primaryClip, lastClipboardItemId, content.text)
-                ?: return emptyList()
+                ?: return SuggestionCandidates.EMPTY
 
-            return buildList {
+            return SuggestionCandidates(buildList {
                 val now = System.currentTimeMillis()
                 if ((now - currentItem.creationTimestampMs) < prefs.clipboard.suggestionTimeout.get() * 1000) {
                     add(ClipboardSuggestionCandidate(currentItem, sourceProvider = this@ClipboardSuggestionProvider, context = context))
@@ -409,7 +415,7 @@ class NlpManager(context: Context) {
                         }
                     }
                 }
-            }
+            })
         }
 
         override suspend fun notifySuggestionAccepted(subtype: Subtype, candidate: SuggestionCandidate) {
