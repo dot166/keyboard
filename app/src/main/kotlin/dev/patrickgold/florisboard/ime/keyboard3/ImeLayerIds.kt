@@ -30,5 +30,5 @@ object ImeLayerIds {
     val Telpad = K3LayerId("telpad")
 
     val Numrow = K3LayerId("numrow")
-    val Kana = K3LayerId("kana")
+    val Alpha = K3LayerId("alpha")
 }
