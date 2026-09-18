@@ -152,6 +152,7 @@ fun Icon3(
                 ImeLayerIds.Base -> context.vectorResource(R.drawable.ic_key_ja_bi_state_hiragana)
                 else -> null // kana key shouldn't be in any other layouts
             }
+            ImeIcons.Dakuten -> context.vectorResource(R.drawable.dakuten)
             else -> null
         }
     }

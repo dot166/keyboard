@@ -53,6 +53,7 @@ import dev.patrickgold.florisboard.ime.keyboard3.interaction.trackPointerInput
 import dev.patrickgold.florisboard.ime.keyboard3.touch.TouchKey
 import dev.patrickgold.florisboard.ime.keyboard3.touch.TouchLayer
 import dev.patrickgold.florisboard.ime.keyboard3.touch.TouchModel
+import dev.patrickgold.florisboard.ime.keyboard3.touch.computeKeyDisplay
 import dev.patrickgold.florisboard.ime.theme.FlorisImeUi
 import dev.patrickgold.florisboard.ime.window.LocalWindowController
 import dev.patrickgold.florisboard.lib.FlorisLocale
@@ -66,6 +67,8 @@ import org.florisboard.lib.snygg.ui.SnyggBox
 import org.k3lp.lib.text.K3String
 import org.k3lp.lib.text.K3StringOrDescriptor
 import org.k3lp.lib.text.asK3String
+import org.k3lp.model.K3Model
+import org.k3lp.model.flick.K3FlickDirection
 
 @Composable
 fun ImeKeyboardBox(
@@ -212,6 +215,7 @@ fun ImeKeyboardBox(
                             layout(placeable.width, placeable.height) { placeable.place(offset) }
                         },
                     showKeyHints = showKeyHints,
+                    model = model
                 )
                 if (devtoolsEnabled && debugShowTouchBoundaries) {
                     Box(
@@ -239,10 +243,12 @@ private fun ImeKeyboardKeyBox(
     longPress: LongPress,
     modifier: Modifier = Modifier,
     showKeyHints: Boolean,
+    model: K3Model,
 ) {
     val display = displayOverride ?: touchKey.label
     val output = touchKey.attrs.output
-    val hint = touchKey.extendedPopupKeys.firstOrNull().takeIf { showKeyHints }
+    val flicks = (touchKey.flick?.segments ?: emptyList()).takeIf { it.isNotEmpty() }.takeIf { showKeyHints }
+    val hint = touchKey.extendedPopupKeys.firstOrNull().takeIf { showKeyHints }.takeIf { flicks != null }
     val attributes: SnyggQueryAttributes = remember(output) {
         buildMap {
             if (output != null) {
@@ -289,5 +295,48 @@ private fun ImeKeyboardKeyBox(
             )
         }
     }
+    if (flicks != null) {
+        val directions = mutableListOf<K3FlickDirection>()
+        for ((keyId, directions1) in flicks) {
+            val key = model.keys.byKeyId[keyId] ?: continue
+            val output = key.output
+            val attributes: SnyggQueryAttributes = remember(output) {
+                buildMap {
+                    if (output != null) {
+                        put(FlorisImeUi.Attr.Output, output.asAttrValue())
+                    }
+                }
+            }
+            val direction = directions1.firstOrNull().takeUnless { directions.contains(it) }
+            if (direction != null) {
+                SnyggBox(
+                    FlorisImeUi.KeyHint.elementName,
+                    attributes = attributes,
+                    selector = selector,
+                    modifier = modifier,
+                ) {
+                    Display3(
+                        modifier = Modifier
+                            .wrapContentSize()
+                            .align(getAlignmentFromDirection(direction = direction)),
+                        display = computeKeyDisplay(model, key),
+                    )
+                }
+            }
+        }
+    }
     LongPressBox(longPress, attributes = attributes)
+}
+
+private fun getAlignmentFromDirection(direction: K3FlickDirection): Alignment {
+    return when (direction) {
+        K3FlickDirection.NORTH -> Alignment.TopCenter
+        K3FlickDirection.EAST -> Alignment.CenterEnd
+        K3FlickDirection.SOUTH -> Alignment.BottomCenter
+        K3FlickDirection.WEST -> Alignment.CenterStart
+        K3FlickDirection.NORTH_EAST -> Alignment.TopEnd
+        K3FlickDirection.NORTH_WEST -> Alignment.TopStart
+        K3FlickDirection.SOUTH_EAST -> Alignment.BottomEnd
+        K3FlickDirection.SOUTH_WEST -> Alignment.BottomStart
+    }
 }
