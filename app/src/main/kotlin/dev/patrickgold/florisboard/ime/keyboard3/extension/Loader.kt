@@ -58,7 +58,7 @@ suspend fun loadFoundationKeyboard(imeController: ImeController, storage: Storag
         displays = listOf("flex://org.florisboard.k3.foundation/displays-implied.xml"),
         keys = listOf("flex://org.florisboard.k3.foundation/keys-implied.xml"),
     )
-    val result = K3lp.compile(loadAssetFile("keyboard/ja-qwerty.xml"), importResolver, impliedImports)
+    val result = K3lp.compile(loadAssetFile("keyboard/ja-flick.xml"), importResolver, impliedImports)
     for (report in result.reports) {
         flogError { report.cause?.stackTraceToString() ?: "" }
     }
