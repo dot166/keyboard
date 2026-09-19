@@ -53,6 +53,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import dev.patrickgold.florisboard.R
+import dev.patrickgold.florisboard.app.FlorisPreferenceStore
 import dev.patrickgold.florisboard.ime.editor.ImeOptions
 import dev.patrickgold.florisboard.ime.keyboard3.ImeController
 import dev.patrickgold.florisboard.ime.keyboard3.ImeIcons
@@ -62,6 +63,7 @@ import dev.patrickgold.florisboard.ime.mozc.MozcEngine
 import dev.patrickgold.florisboard.ime.window.ImeWindowMode
 import dev.patrickgold.florisboard.ime.window.LocalWindowController
 import dev.patrickgold.florisboard.lib.compose.vectorResource
+import dev.patrickgold.jetpref.datastore.model.collectAsState
 import org.florisboard.lib.compose.icons.ForwardDelete
 import org.florisboard.lib.snygg.ui.SnyggIcon
 import org.k3lp.lib.text.K3Descriptor
@@ -90,7 +92,10 @@ fun Icon3(
 
     val preedit by MozcEngine.instance.preedit.collectAsState()
 
-    val imageVector = remember(value, imeOptions, inputAttributes, windowMode, layerId, preedit) {
+    val prefs by FlorisPreferenceStore
+    val showKeyHints by prefs.keyboard.hintedSymbolsEnabled.collectAsState()
+
+    val imageVector = remember(value, imeOptions, inputAttributes, windowMode, layerId, preedit, showKeyHints) {
         when (value) {
             ImeIcons.ArrowDown -> Icons.Default.KeyboardArrowDown
             ImeIcons.ArrowLeft -> Icons.AutoMirrored.Filled.KeyboardArrowLeft
@@ -152,7 +157,10 @@ fun Icon3(
                 ImeLayerIds.Base -> context.vectorResource(R.drawable.ic_key_ja_bi_state_hiragana)
                 else -> null // kana key shouldn't be in any other layouts
             }
-            ImeIcons.Dakuten -> context.vectorResource(R.drawable.dakuten)
+            ImeIcons.Dakuten -> when (showKeyHints) {
+                false -> context.vectorResource(R.drawable.dakuten)
+                true -> null // the key hints show the same as the dakuten icon, so use that
+            }
             else -> null
         }
     }
