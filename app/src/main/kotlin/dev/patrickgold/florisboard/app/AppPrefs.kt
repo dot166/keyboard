@@ -557,7 +557,7 @@ abstract class FlorisPreferenceModel : PreferenceModel() {
     inner class Localization {
         val displayLanguageNamesIn = enum(
             key = "localization__display_language_names_in",
-            default = DisplayLanguageNamesIn.SYSTEM_LOCALE,
+            default = DisplayLanguageNamesIn.NATIVE_LOCALE,
         )
         val displayKeyboardLabelsInSubtypeLanguage = boolean(
             key = "localization__display_keyboard_labels_in_subtype_language",
