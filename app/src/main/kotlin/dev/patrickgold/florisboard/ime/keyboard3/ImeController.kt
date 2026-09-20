@@ -272,7 +272,6 @@ class ImeController(
                         }
                     )
             )
-            // TODO: find a better way of determining language, probably when the rest of the infra comes with the final impl of k3lp
             if (state.model.info.indicator?.contains("mozcJa") ?: false) {
                 updateConfig()
             }
@@ -346,7 +345,6 @@ class ImeController(
         }
 
         override fun emitText(value: K3String) {
-            // TODO: find a better way of determining language, probably when the rest of the infra comes with the final impl of k3lp
             if (state.model.info.indicator?.contains("mozcJa") ?: false && (state.touchLayerId == ImeLayerIds.Alpha || state.touchLayerId == ImeLayerIds.Base) && state.flags.keyVariation != KeyVariation.PASSWORD) { // assume false if null
                 for (key in value.toText()) {
                     if (key == ' ') {
@@ -421,7 +419,6 @@ class ImeController(
 
         override fun switchModel(newModel: K3Model) {
             super.switchModel(newModel)
-            // TODO: find a better way of determining language, probably when the rest of the infra comes with the final impl of k3lp
             if (state.model.info.indicator?.contains("mozcJa") ?: false) {
                 if (state.flags.keyVariation != KeyVariation.NORMAL) {
                     state = state.copy(touchLayerId = ImeLayerIds.Alpha)
@@ -433,7 +430,6 @@ class ImeController(
         // override this to intercept the swap mode and 'base' buttons
         override fun switchTouchLayer(newTouchLayerId: K3LayerId) {
             super.switchTouchLayer(newTouchLayerId)
-            // TODO: find a better way of determining language, probably when the rest of the infra comes with the final impl of k3lp
             if (state.model.info.indicator?.contains("mozcJa") ?: false) { // assume false if null
                 updateConfig()
                 if (MozcEngine.instance.preedit.value.isNotEmpty()) {
@@ -539,7 +535,6 @@ class ImeController(
         }
 
         fun commitMozcOnPanelChange() {
-            // TODO: find a better way of determining language, probably when the rest of the infra comes with the final impl of k3lp
             if (state.model.info.indicator?.contains("mozcJa") ?: false) {
                 if (MozcEngine.instance.preedit.value.isNotEmpty()) {
                     MozcEngine.instance.sendKey(ProtoCommands.KeyEvent.SpecialKey.ENTER)
@@ -554,7 +549,6 @@ class ImeController(
         }
 
         override fun emitBackspace() {
-            // TODO: find a better way of determining language, probably when the rest of the infra comes with the final impl of k3lp
             if (state.model.info.indicator?.contains("mozcJa") ?: false && (state.touchLayerId == ImeLayerIds.Alpha || state.touchLayerId == ImeLayerIds.Base) && state.flags.keyVariation != KeyVariation.PASSWORD) {
                 if (MozcEngine.instance.preedit.value.isNotEmpty()) {
                     MozcEngine.instance.sendKey(ProtoCommands.KeyEvent.SpecialKey.BACKSPACE)
@@ -569,7 +563,6 @@ class ImeController(
         }
 
         override fun emitEnter() {
-            // TODO: find a better way of determining language, probably when the rest of the infra comes with the final impl of k3lp
             if (state.model.info.indicator?.contains("mozcJa") ?: false && (state.touchLayerId == ImeLayerIds.Alpha || state.touchLayerId == ImeLayerIds.Base) && state.flags.keyVariation != KeyVariation.PASSWORD) {
                 if (MozcEngine.instance.preedit.value.isNotEmpty()) {
                     MozcEngine.instance.sendKey(ProtoCommands.KeyEvent.SpecialKey.ENTER)
