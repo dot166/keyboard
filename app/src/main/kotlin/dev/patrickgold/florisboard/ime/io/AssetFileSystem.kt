@@ -110,6 +110,6 @@ class AssetFileSystem(
     }
 
     companion object {
-        private val ROOT = "/".toPath()
+        private val ROOT = "".toPath()
     }
 }
