@@ -28,7 +28,7 @@ class FlorisAssetResolver(val theme: ThemeController.Theme) : SnyggAssetResolver
         require(uri.scheme == "flex")
         require(uri.authority.isNullOrEmpty())
         val extensionRef = checkNotNull(theme.extensionRef) { "Loaded directory was null" }
-        check(extensionRef.isCache || extensionRef.isInternal)
+        check(extensionRef.isCache || extensionRef.isInternal || extensionRef.isAssets)
         val storage = checkNotNull(theme.storage) { "Storage was null" }
         // resolve implies within storage bounds & exists
         val (fs, extPath) = storage.resolve(extensionRef)
@@ -42,7 +42,11 @@ class FlorisAssetResolver(val theme: ThemeController.Theme) : SnyggAssetResolver
         check(fs.metadataOrNull(assetPath)?.isRegularFile == true) {
             "Calculated path '$assetPath' is not a file"
         }
-        assetPath.toString()
+        if (extensionRef.isAssets) {
+            "file:///android_asset/$assetPath"
+        } else {
+            assetPath.toString()
+        }
     }.onFailure { exception ->
         flogError { "FlorisAssetResolver failed to resolve URI '$uri'\n  error: ${exception.message}\n  with:  $theme" }
     }
