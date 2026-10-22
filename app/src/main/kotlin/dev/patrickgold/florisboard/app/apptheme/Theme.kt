@@ -48,7 +48,7 @@ fun getColorScheme(
         primary = seedColor,
         isDark = isDark,
         isAmoled = theme.isAmoled,
-        style = PaletteStyle.TonalSpot,
+        style = PaletteStyle.Expressive,
         specVersion = ColorSpec.SpecVersion.SPEC_2025,
         modifyColorScheme = { scheme ->
             scheme.copy(
